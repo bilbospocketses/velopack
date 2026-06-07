@@ -1,0 +1,62 @@
+# Dependabot version updates for velopack (hard fork).
+#
+# Branch model (2026-06-05 restructure): `vnext` is the default/primary fork
+# branch; `develop` is a PURE upstream mirror (0 fork commits) and must NEVER
+# receive Dependabot PRs. Every entry therefore targets `vnext`.
+#
+# Security updates (CVE-driven) are managed separately via the repo-level
+# "Dependabot security updates" toggle -- they fire whenever an advisory lands
+# on a dependency we use and target the default branch (vnext).
+#
+# Version updates (non-security upgrades) fire on the schedule below.
+# Weekly cadence keeps PR noise manageable for a solo-owned repo.
+
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    target-branch: vnext
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: npm
+    directory: /
+    target-branch: vnext
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: cargo
+    directory: /
+    target-branch: vnext
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: pip
+    directory: /src/lib-python
+    target-branch: vnext
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
