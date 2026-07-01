@@ -45,13 +45,13 @@ jobs:
           ${{ matrix.rust_flags }}
           --cobertura --output-path ./test/coverage/coverage.rust.${{ matrix.os }}.xml
       - name: Upload Rust Coverage
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: ./test/coverage/coverage.rust.${{ matrix.os }}.xml
           flags: rust
       - name: Upload Rust Test Results
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           report_type: test_results
           files: ./test/coverage/junit.*.xml
@@ -74,14 +74,14 @@ jobs:
           cargo llvm-cov report
           --cobertura --output-path ./test/coverage/coverage.rust-nodejs.${{ matrix.os }}.xml
       - name: Upload Node.js Coverage
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           directory: src/lib-nodejs/coverage
           files: ./test/coverage/coverage.rust-nodejs.${{ matrix.os }}.xml
           flags: nodejs
       - name: Upload Node.js Test Results
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           report_type: test_results
           files: ./test/coverage/junit.*.xml
@@ -166,7 +166,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           max_wait_seconds: 900
-          artifacts: rust-macos,rust-windows,rust-ubuntu-bins-x64,rust-ubuntu-bins-arm64
+          artifacts: rust-macos,rust-windows,rust-windows-arm64,rust-ubuntu-bins-x64,rust-ubuntu-bins-arm64
           verbose: true
       ## BUILD AND UPLOAD CROSS COMPILE ARTIFACTS
       - name: Download Rust Artifacts
@@ -260,13 +260,13 @@ jobs:
           --report-github
           --report-spekt-junit --report-spekt-junit-filename ./test/coverage/junit.CrossCompile.Run.xml
       - name: Upload Coverage
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           directory: ./test/coverage
           flags: vpk
       - name: Upload Test Results
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           report_type: test_results
           files: ./test/coverage/junit.*.xml

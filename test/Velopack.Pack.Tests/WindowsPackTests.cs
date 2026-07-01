@@ -193,7 +193,7 @@ public class WindowsPackTests
             PackId = id,
             PackVersion = version,
             PackDirectory = tmpOutput,
-            TargetRuntime = RID.Parse("win"),
+            TargetRuntime = RID.Parse("win-x64"),
         };
 
         var runner = WindowsTestHelper.GetPackRunner(logger);
@@ -825,5 +825,66 @@ public class WindowsPackTests
         } finally {
             File.WriteAllText(testStringFile, oldText);
         }
+    }
+
+    [Theory]
+    [InlineData("x86", AsmResolver.PE.File.MachineType.I386)]
+    [InlineData("x64", AsmResolver.PE.File.MachineType.Amd64)]
+    [InlineData("arm64", AsmResolver.PE.File.MachineType.Arm64)]
+    public void PackIncludesCorrectArchitectureBinaries(string architecture, AsmResolver.PE.File.MachineType expectedMachineType)
+    {
+        Assert.SkipUnless(VelopackRuntimeInfo.IsWindows, "Windows only");
+        Assert.SkipWhen(IsDebugBuild(), "Architecture-specific binary selection only applies to Release builds.");
+
+        using var logger = _output.BuildLoggerFor<WindowsPackTests>();
+        using var _1 = TempUtil.GetTempDirectory(out var tmpOutput);
+        using var _2 = TempUtil.GetTempDirectory(out var tmpReleaseDir);
+        using var _3 = TempUtil.GetTempDirectory(out var unzipDir);
+
+        var exe = "testapp.exe";
+        var id = "Test.Squirrel-App";
+        var version = "1.0.0";
+
+        PathHelper.CopyRustAssetTo(exe, tmpOutput);
+
+        var options = new WindowsPackOptions {
+            EntryExecutableName = exe,
+            ReleaseDir = new DirectoryInfo(tmpReleaseDir),
+            PackId = id,
+            PackVersion = version,
+            TargetRuntime = RID.Parse($"win-{architecture}"),
+            PackDirectory = tmpOutput,
+        };
+
+        var runner = WindowsTestHelper.GetPackRunner(logger);
+        runner.Run(options).GetAwaiterResult();
+
+        var nupkgPath = Path.Combine(tmpReleaseDir, $"{id}-{version}-full.nupkg");
+        Assert.True(File.Exists(nupkgPath));
+        EasyZip.ExtractZipToDirectory(logger.ToVelopackLogger(), nupkgPath, unzipDir);
+
+        var squirrelExePath = Path.Combine(unzipDir, "lib", "app", "Squirrel.exe");
+        Assert.True(File.Exists(squirrelExePath), "Expected Squirrel.exe (Update.exe) in the package");
+        AssertMachineType(squirrelExePath, expectedMachineType);
+
+        var setupPath = Path.Combine(tmpReleaseDir, $"{id}-win-Setup.exe");
+        Assert.True(File.Exists(setupPath), "Expected Setup.exe in the release dir");
+        AssertMachineType(setupPath, expectedMachineType);
+    }
+
+    private static bool IsDebugBuild()
+    {
+#if DEBUG
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    private void AssertMachineType(string pePath, AsmResolver.PE.File.MachineType expected)
+    {
+        var actual = AsmResolver.PE.PEImage.FromFile(pePath).MachineType;
+        _output.WriteLine($"{Path.GetFileName(pePath)} machine type: {actual}, expected: {expected}");
+        Assert.Equal(expected, actual);
     }
 }
